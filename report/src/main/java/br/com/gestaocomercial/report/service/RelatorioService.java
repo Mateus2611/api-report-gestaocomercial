@@ -299,8 +299,8 @@ public class RelatorioService {
                     ClienteReport cli = clientesMap.get(v.getClienteId());
                     String nome = cli != null ? cli.getNome() : "Cliente #" + v.getClienteId();
                     String tipo = cli != null ? cli.getTipo() : "-";
-                    String classe = v.getNotaAvaliacao() >= 4.0f ? "PROMOTOR"
-                            : (v.getNotaAvaliacao() >= 3.0f ? "NEUTRO" : "DETRATOR");
+                    String classe = v.getNotaAvaliacao() >= 4.0f ? "BOM"
+                            : (v.getNotaAvaliacao() >= 3.0f ? "NEUTRO" : "RUIM");
 
                     return new AvaliacaoAtendimentoDTO(
                             v.getId(), nome, tipo, v.getDataCriacao(),
@@ -313,14 +313,14 @@ public class RelatorioService {
                 .toList();
 
         double mediaGeral = lista.stream().mapToDouble(AvaliacaoAtendimentoDTO::notaAvaliacao).average().orElse(0.0);
-        long promotores = lista.stream().filter(a -> "PROMOTOR".equals(a.classificacao())).count();
-        long detratores = lista.stream().filter(a -> "DETRATOR".equals(a.classificacao())).count();
+        long promotores = lista.stream().filter(a -> "BOM".equals(a.classificacao())).count();
+        long detratores = lista.stream().filter(a -> "RUIM".equals(a.classificacao())).count();
 
         Map<String, Object> kpis = new LinkedHashMap<>();
         kpis.put("mediaGeral", Math.round(mediaGeral * 100.0) / 100.0);
         kpis.put("totalAvaliacoes", lista.size());
-        kpis.put("promotores", promotores);
-        kpis.put("detratores", detratores);
+        kpis.put("positivas", promotores);
+        kpis.put("negativas", detratores);
 
         return new AnaliseResponseDTO<>(kpis, lista);
     }
@@ -972,7 +972,7 @@ public class RelatorioService {
                 a.classificacao()
         }).toList();
 
-        String rodape = String.format("Média Geral: %s  |  Total Avaliações: %s  |  Promotores: %s  |  Detratores: %s",
+        String rodape = String.format("Média Geral: %s  |  Total Avaliações: %s  |  Positivas: %s  |  Negativas: %s",
                 analise.kpis().get("mediaGeral"),
                 analise.kpis().get("totalAvaliacoes"),
                 analise.kpis().get("promotores"),
